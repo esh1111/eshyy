@@ -1,115 +1,148 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QTabWidget, QWidget, QVBoxLayout, QLabel, QFileDialog
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QMenuBar, QMenu, QAction
+from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import Qt
 
-class PingPongGame(QMainWindow):
-    def __init(self):
-        super().__init()
+# Класс для начальной игры
+class MainWindow(QWidget):
 
-        self.initUI()
+    def __init__(self):
+        super().__init__()
 
-    def initUI(self):
-        # Создаем кнопки на главном окне
-        play_button = QPushButton('Играть', self)
-        play_button.clicked.connect(self.start_game)
+        # Настройка окна
+        self.setWindowTitle("Пинг-понг")
+        self.setGeometry(300, 300, 600, 400)
 
-        skins_button = QPushButton('Скины', self)
-        skins_button.clicked.connect(self.show_skins)
+        # Создание меню
+        menubar = QMenuBar(self)
+        self.setMenuBar(menubar)
+        menu = QMenu("Файл", self)
+        menubar.addMenu(menu)
+        action_играть = QAction("Играть", self)
+        action_скины = QAction("Скин", self)
+        action_выход = QAction("Выход", self)
+        menu.addAction(action_играть)
+        menu.addAction(action_скины)
+        menu.addAction(action_выход)
 
-        exit_button = QPushButton('Выход', self)
-        exit_button.clicked.connect(self.close)
+        # Создание кнопок
+        button_играть = QPushButton("Играть", self)
+        button_скины = QPushButton("Скин", self)
+        button_выход = QPushButton("Выход", self)
+        button_играть.setGeometry(200, 200, 100, 50)
+        button_скины.setGeometry(300, 200, 100, 50)
+        button_выход.setGeometry(400, 200, 100, 50)
 
-        # Создаем вкладки для скинов
-        skin_tabs = QTabWidget(self)
-        ball_tab = QWidget()
-        paddle_tab = QWidget()
-        left_paddle_tab = QWidget()
-        right_paddle_tab = QWidget()
+        # Связывание событий с кнопками
+        button_играть.clicked.connect(self.on_button_играть_clicked)
+        button_скины.clicked.connect(self.on_button_скины_clicked)
+        button_выход.clicked.connect(self.on_button_выход_clicked)
 
-        skin_tabs.addTab(ball_tab, 'Мяч')
-        skin_tabs.addTab(paddle_tab, 'Доска')
-        paddle_tab.addTab(left_paddle_tab, 'Левая ракетка')
-        paddle_tab.addTab(right_paddle_tab, 'Правая ракетка')
-
-        # Создаем метки для отображения скинов
-        self.ball_skin_label = QLabel(ball_tab)
-        self.paddle_skin_label = QLabel(paddle_tab)
-        self.left_paddle_skin_label = QLabel(left_paddle_tab)
-        self.right_paddle_skin_label = QLabel(right_paddle_tab)
-
-        # Создаем кнопки для выбора скинов
-        ball_skin_button = QPushButton('Выбрать скин для мяча', ball_tab)
-        ball_skin_button.clicked.connect(self.choose_ball_skin)
-
-        paddle_skin_button = QPushButton('Выбрать скин для доски', paddle_tab)
-        paddle_skin_button.clicked.connect(self.choose_paddle_skin)
-
-        left_paddle_skin_button = QPushButton('Выбрать скин для левой ракетки', left_paddle_tab)
-        left_paddle_skin_button.clicked.connect(self.choose_left_paddle_skin)
-
-        right_paddle_skin_button = QPushButton('Выбрать скин для правой ракетки', right_paddle_tab)
-        right_paddle_skin_button.clicked.connect(self.choose_right_paddle_skin)
-
-        # Размещаем элементы на главном окне
-        layout = QVBoxLayout()
-        layout.addWidget(play_button)
-        layout.addWidget(skins_button)
-        layout.addWidget(exit_button)
-        layout.addWidget(skin_tabs)
-
-        central_widget = QWidget()
-        central_widget.setLayout(layout)
-        self.setCentralWidget(central_widget)
-
-        self.setGeometry(100, 100, 600, 400)
-        self.setWindowTitle('Игра пинг-понг')
+        # Отображение окна
         self.show()
 
-    def start_game(self):
-        # Ваш код для запуска игры
-        pass
+    # Обработка события нажатия на кнопку "Играть"
+    def on_button_играть_clicked(self):
+        # Переход на игровое окно
+        self.game = GameWindow()
+        self.game.show()
 
-    def show_skins(self):
-        # Ваш код для отображения скинов
-        pass
+    # Обработка события нажатия на кнопку "Скин"
+    def on_button_скины_clicked(self):
+        # Открытие окна со скинами
+        self.skin_window = SkinWindow()
+        self.skin_window.show()
 
-    def choose_ball_skin(self):
-        options = QFileDialog.Options()
-        options |= QFileDialog.ReadOnly
-        file_name, _ = QFileDialog.getOpenFileName(self, "Выберите скин для мяча", "", "PNG Files (*.png);;JPEG Files (*.jpg)", options=options)
-        
-        if file_name:
-            pixmap = QPixmap(file_name)
-            self.ball_skin_label.setPixmap(pixmap)
+    # Обработка события нажатия на кнопку "Выход"
+    def on_button_выход_clicked(self):
+        # Закрытие приложения
+        sys.exit()
 
-    def choose_paddle_skin(self):
-        options = QFileDialog.Options()
-        options |= QFileDialog.ReadOnly
-        file_name, _ = QFileDialog.getOpenFileName(self, "Выберите скин для доски", "", "PNG Files (*.png);;JPEG Files (*.jpg)", options=options)
-        
-        if file_name:
-            pixmap = QPixmap(file_name)
-            self.paddle_skin_label.setPixmap(pixmap)
+# Класс для окна со скинами
+class SkinWindow(QWidget):
 
-    def choose_left_paddle_skin(self):
-        options = QFileDialog.Options()
-        options |= QFileDialog.ReadOnly
-        file_name, _ = QFileDialog.getOpenFileName(self, "Выберите скин для левой ракетки", "", "PNG Files (*.png);;JPEG Files (*.jpg)", options=options)
-        
-        if file_name:
-            pixmap = QPixmap(file_name)
-            self.left_paddle_skin_label.setPixmap(pixmap)
+    def __init__(self):
+        super().__init__()
 
-    def choose_right_paddle_skin(self):
-        options = QFileDialog.Options()
-        options |= QFileDialog.ReadOnly
-        file_name, _ = QFileDialog.getOpenFileName(self, "Выберите скин для правой ракетки", "", "PNG Files (*.png);;JPEG Files (*.jpg)", options=options)
-        
-        if file_name:
-            pixmap = QPixmap(file_name)
-            self.right_paddle_skin_label.setPixmap(pixmap)
+        # Настройка окна
+        self.setWindowTitle("Скин")
+        self.setGeometry(300, 300, 600, 400)
 
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    game = PingPongGame()
-    sys.exit(app.exec_())
+        # Создание вкладок
+        self.tabWidget = QTabWidget(self)
+        self.tabWidget.setGeometry(100, 100, 400, 200)
+        self.tab_мяч = QWidget()
+        self.tab_доска = QWidget()
+        self.tab_левая_ракетка = QWidget()
+        self.tab_правая_ракетка = QWidget()
+        self.tabWidget.addTab(self.tab_мяч, "Мяч")
+        self.tabWidget.addTab(self.tab_доска, "Доска")
+        self.tabWidget.addTab(self.tab_левая_ракетка, "Левая ракетка")
+        self.tabWidget.addTab(self.tab_правая_ракетка, "Правая ракетка")
+
+         # Создание кнопок для выбора скина
+        self.button_мяч = QPushButton("Выбрать", self.tab_мяч)
+        self.button_доска = QPushButton("Выбрать", self.tab_доска)
+        self.button_левая_ракетка = QPushButton("Выбрать", self.tab_левая_ракетка)
+        self.button_правая_ракетка = QPushButton("Выбрать", self.tab_правая_ракетка)
+        self.button_мяч.setGeometry(100, 50, 100, 50)
+        self.button_доска.setGeometry(100, 50, 100, 50)
+        self.button_левая_ракетка.setGeometry(100, 50, 100, 50)
+        self.button_правая_ракетка.setGeometry(200, 50, 100, 50)
+
+        # Связывание событий с кнопками
+        self.button_мяч.clicked.connect(self.on_button_мяч_clicked)
+        self.button_доска.clicked.connect(self.on_button_доска_clicked)
+        self.button_левая_ракетка.clicked.connect(self.on_button_левая_ракетка_clicked)
+        self.button_правая_ракетка.clicked.connect(self.on_button_правая_ракетка_clicked)
+
+        # Отображение окна
+        self.show()
+
+        # Обработка события нажатия на кнопку "Выбрать" для мяча
+        def on_button_мяч_clicked(self):
+    # Открытие диалогового окна для выбора файла
+            file_dialog = QFileDialog()
+            file_dialog.setFileMode(QFileDialog.ExistingFile)
+            file_dialog.setNameFilter("Изображения (*.jpg *.png)")
+            if file_dialog.exec():
+        # Загрузка файла
+                file_path = file_dialog.selectedFiles()[0]
+        # Установка изображения мяча
+                self.image_ball.setPixmap(QPixmap(file_path))
+
+# Обработка события нажатия на кнопку "Выбрать" для доски
+        def on_button_доска_clicked(self):
+    # Открытие диалогового окна для выбора файла
+            file_dialog = QFileDialog()
+            file_dialog.setFileMode(QFileDialog.ExistingFile)
+            file_dialog.setNameFilter("Изображения (*.jpg *.png)")
+            if file_dialog.exec():
+        # Загрузка файла
+                file_path = file_dialog.selectedFiles()[0]
+        # Установка изображения доски
+                self.image_table.setPixmap(QPixmap(file_path))
+
+# Обработка события нажатия на кнопку "Выбрать" для левой ракетки
+        def on_button_левая_ракетка_clicked(self):
+    # Открытие диалогового окна для выбора файла
+            file_dialog = QFileDialog()
+            file_dialog.setFileMode(QFileDialog.ExistingFile)
+            file_dialog.setNameFilter("Изображения (*.jpg *.png)")
+            if file_dialog.exec():
+        # Загрузка файла
+                file_path = file_dialog.selectedFiles()[0]
+        # Установка изображения левой ракетки
+                self.image_left_racket.setPixmap(QPixmap(file_path))
+
+# Обработка события нажатия на кнопку "Выбрать" для правой ракетки
+        def on_button_правая_ракетка_clicked(self):
+    # Открытие диалогового окна для выбора файла
+            file_dialog = QFileDialog()
+            file_dialog.setFileMode(QFileDialog.ExistingFile)
+            file_dialog.setNameFilter("Изображения (*.jpg *.png)")
+            if file_dialog.exec():
+        # Загрузка файла
+                file_path = file_dialog.selectedFiles()[0]
+        # Установка изображения правой ракетки
+                self.image_right_racket.setPixmap(QPixmap(file_path))
