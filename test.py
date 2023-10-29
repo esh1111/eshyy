@@ -10,6 +10,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setWindowTitle("Пинг-понг")
         self.setFixedSize(600, 400)
 
+
+        
+
         self.play_button = QtWidgets.QPushButton("Играть")
         self.skins_button = QtWidgets.QPushButton("Скин")
         self.exit_button = QtWidgets.QPushButton("Выход")
