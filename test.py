@@ -1,253 +1,171 @@
-import sys
-from PyQt5 import QtWidgets, QtGui, QtCore
-from PyQt5.QtWidgets import QTabWidget, QPushButton
-import random
+import sys, random
+from PyQt5.QtWidgets import QApplication, QMainWindow, QMenuBar, QMenu, QAction, QLabel, QPushButton, QSlider
+from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtGui import QPixmap
 
-class MainWindow(QtWidgets.QMainWindow):
+
+class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.title = "Пинг-понг"
+        self.ball_skin = "ball1.png"
+        self.left_racket_skin = "left_racket1.png"
+        self.right_racket_skin = "right_racket1.png"
+        self.board_skin = "bard1.png"
+        self.init_ui()
 
-        self.setWindowTitle("Пинг-понг")
-        self.setFixedSize(600, 400)
+    def init_ui(self):
+        # Создаем меню
+        menubar = QMenuBar(self)
+        self.setMenuBar(menubar)
 
+        # Создаем пункты меню
+        game_menu = QMenu("Игра", menubar)
+        skins_menu = QMenu("Скины", menubar)
+        exit_menu = QAction("Выход", self)
+
+        # Добавляем пункты меню в менюбар
+        menubar.addMenu(game_menu)
+        menubar.addMenu(skins_menu)
+        exit_menu.triggered.connect(self.close)
+
+        # Создаем подпункты меню "Скины"
+        board_skins_menu = QMenu("Доска", skins_menu)
+        ball_skins_menu = QMenu("Мяч", skins_menu)
+        racket_skins_menu = QMenu("Ракетки", skins_menu)
+
+        # Добавляем подпункты меню "Скины" в меню "Скины"
+        skins_menu.addMenu(board_skins_menu)
+        skins_menu.addMenu(ball_skins_menu)
+        skins_menu.addMenu(racket_skins_menu)
+
+        # Создаем кнопки для выбора скинов
+        board_skin_buttons = [
+            QPushButton(skin, self) for skin in ["bard1.png", "bard2.png", "bard3.png"]
+        ]
+        ball_skin_buttons = [
+            QPushButton(skin, self) for skin in ["ball1.png", "ball2.png", "ball3.png"]
+        ]
+        left_racket_skin_buttons = [
+            QPushButton(skin, self) for skin in ["left_racket1.png", "left_racket2.png", "left_racket3.png"]
+        ]
+        right_racket_skin_buttons = [
+            QPushButton(skin, self) for skin in ["right_racket1.png", "right_racket2.png", "right_racket3.png"]
+        ]
+
+        # Добавляем кнопки для выбора скинов в подпункты меню "Скины"
+        board_skins_menu.addActions(board_skin_buttons)
+        ball_skins_menu.addActions(ball_skin_buttons)
+        racket_skins_menu.addActions(left_racket_skin_buttons + right_racket_skin_buttons)
+
+        # Соединяем сигналы кнопок с соответствующими слотами
+        for button in board_skin_buttons:
+            button.clicked.connect(self.set_board_skin)
+        for button in ball_skin_buttons:
+            button.clicked.connect(self.set_ball_skin)
+        for button in left_racket_skin_buttons:
+            button.clicked.connect(self.set_left_racket_skin)
+        for button in right_racket_skin_buttons:
+            button.clicked.connect(self.set_right_racket_skin)
+
+        # Создаем игровое поле
+        self.board = QLabel(self)
+        self.board.setPixmap(QPixmap(self.board_skin))
+        self.board.setGeometry(0, 0, 600, 400)
+
+        # Создаем ракетки
+        self.left_racket = QLabel(self)
+        self.left_racket.setPixmap(QPixmap(self.left_racket_skin))
+        self.left_racket.setGeometry(20, 180, 100, 20)
+
+        # Создаем ракетки
+        self.left_racket = QLabel(self)
+        self.left_racket.setPixmap(QPixmap(self.right_racket_skin))
+        self.left_racket.setGeometry(20, 180, 100, 20)
+
+        # Создаем мяч
+        self.ball = QLabel(self)
+        self.ball.setPixmap(QPixmap(self.ball_skin))
+        self.ball.setGeometry(300, 200, 20, 20)
+
+        # Создаем левую стенку
+        self.left_wall = QLabel(self)
+        self.left_wall.setGeometry(0, 0, 20, 400)
+
+        # Задаем цвет левой стены
+        self.left_wall.setStyleSheet("background-color: rgb(255, 0, 0);")
+
+        # Создаем правую стенку
+        self.right_wall = QLabel(self)
+        self.right_wall.setGeometry(580, 0, 20, 400)
+
+        # Задаем цвет правой стены
+        self.right_wall.setStyleSheet("background-color: rgb(0, 0, 255);")
 
         
+        # Создаем таймер
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.update)
+        self.timer.start(50)
 
-        self.play_button = QtWidgets.QPushButton("Играть")
-        self.skins_button = QtWidgets.QPushButton("Скин")
-        self.exit_button = QtWidgets.QPushButton("Выход")
-
-        h_layout = QtWidgets.QHBoxLayout()
-        h_layout.addWidget(self.play_button)
-        h_layout.addWidget(self.skins_button)
-        h_layout.addWidget(self.exit_button)
-
-        main_widget = QtWidgets.QWidget()
-        main_widget.setLayout(h_layout)
-
-        self.setCentralWidget(main_widget)
-
-        self.play_button.clicked.connect(self.play_game)
-        self.skins_button.clicked.connect(self.show_skins)
-        self.exit_button.clicked.connect(self.close)
-
-        self.hide()
-
-    def play_game(self):
-        self.game_window = GameWindow()
-        self.game_window.show()
-        self.game_window.ball.x_speed = -5
-        self.game_window.game_started = True
-
-    def show_skins(self):
-        self.skins_window = SkinsWindow()
-        self.skins_window.show()
-
-class GameWindow(QtWidgets.QMainWindow):
-    ball_skins = ["vbyfyft;f.png"]
-    left_racket_skins = ["нога.png"]
-    right_racket_skins = ["XGAAAgGvDeA-1920.png"]
-
-    def __init__(self):
-        super().__init__()
-
-        self.setWindowTitle("Пинг-понг")
-        self.setFixedSize(600, 400)
-
+        # Создаем переменные для хранения состояния игры
         self.left_score = 0
         self.right_score = 0
-        self.winner = None
-        self.game_started = False
+        self.left_serving = True
 
-        self.ball = Ball()
-        self.left_racket = Racket(x=50, y=200)
-        self.right_racket = Racket(x=550, y=200)
-        self.score_label = QtWidgets.QLabel()
-        self.background_board = QtWidgets.QLabel()
-        self.background_board.setPixmap(QtGui.QPixmap("прототип стола номер 3.png"))
-        self.background_board.setGeometry(0, 0, 600, 400)
-        self.setCentralWidget(self.background_board)
+        # Устанавливаем фокус на левую ракетку
+        self.left_racket.setFocus()
 
-        main_widget = QtWidgets.QWidget()
-        main_widget.setLayout(QtWidgets.QVBoxLayout())
-        main_widget.layout().addWidget(self.score_label)
-        main_widget.layout().addWidget(self.ball)
-        main_widget.layout().addWidget(self.left_racket)
-        main_widget.layout().addWidget(self.right_racket)
+        self.show()
 
-        self.setCentralWidget(main_widget)
+    def set_board_skin(self, action):
+        self.board_skin = action.text()
+        self.board.setPixmap(QPixmap(self.board_skin))
 
-        self.left_racket.key_up = QtCore.Qt.Key_W
-        self.left_racket.key_down = QtCore.Qt.Key_S
-        self.right_racket.key_up = QtCore.Qt.Key_Up
-        self.right_racket.key_down = QtCore.Qt.Key_Down
+    def set_ball_skin(self, action):
+        self.ball_skin = action.text()
+        self.ball.setPixmap(QPixmap(self.ball_skin))
 
-        self.ball.skin = random.choice(self.ball_skins)
-        self.left_racket.skin = random.choice(self.left_racket_skins)
-        self.right_racket.skin = random.choice(self.right_racket_skins)
+    def set_left_racket_skin(self, action):
+        self.left_racket_skin = action.text()
+        self.left_racket.setPixmap(QPixmap(self.left_racket_skin))
 
-        self.update()
+    def set_right_racket_skin(self, action):
+        self.right_racket_skin = action.text()
+        self.right_racket.setPixmap(QPixmap(self.right_racket_skin))
 
     def update(self):
-        if self.game_started:
-            self.ball.move()
-            self.score_label.setText(f"Счет: {self.left_score} - {self.right_score}")
-            self.ball.check_collision(self.left_racket)
-            self.ball.check_collision(self.right_racket)
+        # Обновляем положение мяча
+        self.ball.move(self.ball.x() + self.ball_x_vel, self.ball.y() + self.ball_y_vel)
 
-            if self.ball.x < 0 or self.ball.x > 600:
-                self.reset_game()
+        # Проверяем, столкнулся ли мяч со стеной или ракеткой
+        if self.ball.x() <= 0 or self.ball.x() >= 580:
+            self.ball_x_vel = -self.ball_x_vel
+        elif self.ball.y() <= 0:
+            self.ball_y_vel = -self.ball_y_vel
+        elif self.ball.y() + 20 >= 380:
+            if self.left_serving:
+                self.left_score += 1
+            else:
+                self.right_score += 1
+            self.ball.move(300, 200)
+            self.ball_x_vel = random.randint(-5, 5)
+            self.ball_y_vel = random.randint(-5, 5)
+            self.left_serving = not self.left_serving
 
-            self.ball.update()
-            self.left_racket.update()
-            self.right_racket.update()
-            self.check_winner()
-
-    def reset_game(self):
-        self.game_started = False
-        self.left_score = 0
-        self.right_score = 0
-        self.winner = None
-        self.ball.reset()
-
-    def check_winner(self):
-        if self.ball.x < 0:
-            self.winner = "Правая сторона"
-        elif self.ball.x > 600:
-            self.winner = "Левая сторона"
+        # Проверяем, закончилась ли игра
+        if self.left_score >= 11 or self.right_score >= 11:
+            self.timer.stop()
 
     def keyPressEvent(self, event):
-        if self.game_started:
-            if event.key() == self.left_racket.key_up:
-                self.left_racket.move_up()
-            elif event.key() == self.left_racket.key_down:
-                self.left_racket.move_down()
-            elif event.key() == self.right_racket.key_up:
-                self.right_racket.move_up()
-            elif event.key() == self.right_racket.key_down:
-                self.right_racket.move_down()
+        # Движение левой ракетки
+        if event.key() == Qt.Key.Up:
+            self.left_racket.move(self.left_racket.x(), self.left_racket.y() - 5)
+        elif event.key() == Qt.Key.Down:
+            self.left_racket.move(self.left_racket.x(), self.left_racket.y() + 5)
 
-class Ball(QtWidgets.QLabel):
-    ball_skins = ["vbyfyft;f.png"]
-
-    def __init__(self):
-        super().__init__()
-        self.skin = None
-        self.load_skin()
-        self.x_speed = 5
-        self.y_speed = 5
-        self.x = 300
-        self.y = 200
-
-    def load_skin(self):
-        self.skin = random.choice(self.ball_skins)
-        image = QtGui.QImage(self.skin)
-        image = image.scaled(100, 100)
-        pixmap = QtGui.QPixmap(image)
-        self.setPixmap(pixmap)
-
-    def move(self):
-        self.x += self.x_speed
-        self.y += self.y_speed
-        if self.x < 0 or self.x > 600:
-            self.x_speed = -self.x_speed
-        if self.y < 0 or self.y > 300:
-            self.y_speed = -self.y_speed
-
-    def reset(self):
-        self.x = 300
-        self.y = 200
-        self.x_speed = random.randint(-5, 5)
-        self.y_speed = random.randint(-5, 5)
-
-    def check_collision(self, racket):
-        if self.x >= racket.x - racket.width / 2 and self.x <= racket.x + racket.width / 2 and self.y >= racket.y - racket.height / 2 and self.y <= racket.y + racket.height / 2:
-            self.y_speed = -self.y_speed
-
-class Racket(QtWidgets.QLabel):
-    left_racket_skins = ["нога.png"]
-    right_racket_skins = ["XGAAAgGvDeA-1920.png"]
-
-    def __init__(self, x, y):
-        super().__init__()
-        self.speed = 10
-        self.skin = None
-        self.load_skin()
-        self.x = x
-        self.y = y
-        self.width = 100
-        self.height = 20
-
-    def load_skin(self):
-        self.skin = random.choice(self.left_racket_skins)
-        image = QtGui.QImage(self.skin)
-        image = image.scaled(100, 20)
-        pixmap = QtGui.QPixmap(image)
-        self.setPixmap(pixmap)
-
-    def move_up(self):
-        if self.game_started:
-            self.y -= self.speed
-            if self.y < 0:
-                self.y = 0
-
-    def move_down(self):
-        if self.game_started:
-            self.y += self.speed
-            if self.y > 300:
-                self.y = 300
-
-class SkinsWindow(QtWidgets.QMainWindow):
-    def __init__(self):
-        super().__init__()
-
-        self.setWindowTitle("Скин")
-        self.setFixedSize(600, 400)
-
-        self.ball_tab = QTabWidget()
-        self.left_racket_tab = QTabWidget()
-        self.right_racket_tab = QTabWidget()
-
-        self.fill_ball_tab()
-        self.fill_left_racket_tab()
-        self.fill_right_racket_tab()
-
-        main_widget = QtWidgets.QWidget()
-        main_widget.setLayout(QtWidgets.QVBoxLayout())
-        main_widget.layout().addWidget(self.ball_tab)
-        main_widget.layout().addWidget(self.left_racket_tab)
-        main_widget.layout().addWidget(self.right_racket_tab)
-
-        self.setCentralWidget(main_widget)
-
-    def fill_ball_tab(self):
-        for skin in GameWindow.ball_skins:
-            button = QPushButton(skin)
-            button.clicked.connect(lambda checked, skin=skin: self.set_skin(skin))
-            self.ball_tab.addTab(button, skin)
-
-    def fill_left_racket_tab(self):
-        for skin in GameWindow.left_racket_skins:
-            button = QPushButton(skin)
-            button.clicked.connect(lambda checked, skin=skin: self.set_skin(skin))
-            self.left_racket_tab.addTab(button, skin)
-
-    def fill_right_racket_tab(self):
-        for skin in GameWindow.right_racket_skins:
-            button = QPushButton(skin)
-            button.clicked.connect(lambda checked, skin=skin: self.set_skin(skin))
-            self.right_racket_tab.addTab(button, skin)
-
-    def set_skin(self, skin):
-        if self.sender().parent() == self.ball_tab:
-            GameWindow.ball_skins = [skin]
-        elif self.sender().parent() == self.left_racket_tab:
-            GameWindow.left_racket_skins = [skin]
-        elif self.sender().parent() == self.right_racket_tab:
-            GameWindow.right_racket_skins = [skin]
 
 if __name__ == "__main__":
-    app = QtWidgets.QApplication(sys.argv)
+    app = QApplication(sys.argv)
     window = MainWindow()
-    window.show()
-    sys.exit(app.exec())
+    sys.exit(app.exec_())
