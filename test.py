@@ -129,10 +129,12 @@ class MainWindow(QMainWindow):
     def set_left_racket_skin(self, action):
         self.left_racket_skin = action.text()
         self.left_racket.setPixmap(QPixmap(self.left_racket_skin))
+        self.left_racket.setGeometry(5, 180, 100, 20)
 
     def set_right_racket_skin(self, action):
         self.right_racket_skin = action.text()
         self.right_racket.setPixmap(QPixmap(self.right_racket_skin))
+        self.right_racket.setGeometry(580 - 105, 180, 100, 20)
 
     def update(self):
         # Обновляем положение мяча
@@ -159,10 +161,16 @@ class MainWindow(QMainWindow):
 
     def keyPressEvent(self, event):
         # Движение левой ракетки
-        if event.key() == Qt.Key.Up:
+        if event.key() == Qt.Key.W:
             self.left_racket.move(self.left_racket.x(), self.left_racket.y() - 5)
-        elif event.key() == Qt.Key.Down:
+        elif event.key() == Qt.Key.S:
             self.left_racket.move(self.left_racket.x(), self.left_racket.y() + 5)
+
+        # Движение правой ракетки
+        if event.key() == Qt.Key.Up:
+            self.right_racket.move(self.right_racket.x(), self.right_racket.y() - 5)
+        elif event.key() == Qt.Key.Down:
+            self.right_racket.move(self.right_racket.x(), self.right_racket.y() + 5)
 
 
 if __name__ == "__main__":
