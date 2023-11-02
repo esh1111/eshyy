@@ -5,5 +5,5 @@
 ## теперт пишите в теринале следуйщие \|/
 ## для установки venv "py -m venv venv "
 ## для установки библиятеку ".\venv\Scripts\pip.exe install pygame"
-## для запуска игры ".\venv\Scripts\python.exe .\eshyy\jj\test.py"
+## для запуска игры ".\venv\Scripts\python.exe .\jj\test.py"
 ## и все приятной игры
