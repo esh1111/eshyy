@@ -1,189 +1,169 @@
+import pygame
 import sys
-import pygame 
-from PyQt5 import QtWidgets
+import time
 
-
-# Константы
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
-
-# Инициализация PyQt5
-app = QtWidgets.QApplication(sys.argv)
-
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-
-# Инициализация PyGame
+# Инициализация Pygame
 pygame.init()
 
+# Размеры окна
+WIDTH, HEIGHT = 800, 600
+
+# Цвета
+WHITE = (255, 255, 255)
+GREEN = (0, 255, 0)
+BLUE = (0, 0, 255)
+
+# Инициализация экрана
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Пинг-Понг")
+
 # Загрузка изображений
-ball_image = pygame.image.load("ball.png")
-board_image = pygame.image.load("bard.png")
-left_racket_image = pygame.image.load("left_rocket.png")
-right_racket_image = pygame.image.load("right_rocket.png")
-menu_fon_image = pygame.image.load("menu_fon.png")
+background = pygame.image.load("fon.png")
+menu_background = pygame.image.load("menu_fon.png")
+ball = pygame.image.load("ball.png")
+bard = pygame.image.load("bard.png")
+left_rocket = pygame.image.load("left_rocket.png")
+right_rocket = pygame.image.load("right_rocket.png")
 
-# Создание объектов
-ball = pygame.Rect(SCREEN_WIDTH / 2 - 25, SCREEN_HEIGHT / 2 - 25, 50, 50)
-board = pygame.Rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
-left_racket = pygame.Rect(10, SCREEN_HEIGHT / 2 - 50, 13, 100)
-right_racket = pygame.Rect(SCREEN_WIDTH - 43, SCREEN_HEIGHT / 2 - 50, 30, 100)
+# Размеры объектов
+ball_rect = ball.get_rect()
+bard_rect = bard.get_rect()
+left_rocket_rect = left_rocket.get_rect()
+right_rocket_rect = right_rocket.get_rect()
 
-# Настройки PyGame
-pygame.display.set_caption("Пинг-понг")
-pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+left_rocket_rect.height = 130  # Изменение высоты левой ракетки
+right_rocket_rect.height = 130
 
-# Переменные
+# Начальные позиции объектов
+ball_rect.center = (WIDTH // 2, HEIGHT // 2)
+bard_rect.center = (WIDTH // 2, HEIGHT // 2)
+left_rocket_rect.topleft = (20, (HEIGHT - left_rocket_rect.height) // 2)
+right_rocket_rect.topright = (WIDTH - 20, (HEIGHT - right_rocket_rect.height) // 2)
+
+# Скорость мяча
+ball_speed = [5, 5]
+
+# Скорость ракеток
+left_rocket_speed = 5
+right_rocket_speed = 5
+
+# Очки
 left_score = 0
 right_score = 0
-round_number = 1
+rounds = 0
 
-# Функции
-def draw_objects():
-    """Рисование объектов на экране"""
-    pygame.draw.rect(screen, pygame.Color("black"), board)
-    pygame.draw.rect(screen, pygame.Color("white"), left_racket)
-    pygame.draw.rect(screen, pygame.Color("white"), right_racket)
-    pygame.draw.rect(screen, pygame.Color("red"), ball)
+# Шрифт для текста
+font = pygame.font.Font(None, 36)
 
-def update_objects():
-    """Обновление положения объектов"""
-    global ball, left_racket, right_racket
+# Основной игровой цикл
+running = False
+menu = True
+paused = False
+
+while menu:
+    screen.blit(menu_background, (0, 0))
+    quit_text = font.render("Нажмите Enter", True, WHITE)
+
+    screen.blit(quit_text, (WIDTH // 2 - 100, 400))
+
+    pygame.display.flip()
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_RETURN:
+                menu = False
+
+while not running:
+    screen.blit(background, (0, 0))
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = True
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                paused = not paused
+
+    if paused:
+        pause_text = font.render("Пауза", True, WHITE)
+        screen.blit(pause_text, (WIDTH // 2 - 40, HEIGHT // 2))
+        pygame.display.flip()
+        time.sleep(0.5)
+        continue
+
+    # Движение ракеток
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_w]:
+        left_rocket_rect.y -= left_rocket_speed
+    if keys[pygame.K_s]:
+        left_rocket_rect.y += left_rocket_speed
+    if keys[pygame.K_UP]:
+        right_rocket_rect.y -= right_rocket_speed
+    if keys[pygame.K_DOWN]:
+        right_rocket_rect.y += right_rocket_speed
+
+    # Границы для ракеток
+    left_rocket_rect.y = max(0, left_rocket_rect.y)
+    left_rocket_rect.y = min(HEIGHT - left_rocket_rect.height, left_rocket_rect.y)
+    right_rocket_rect.y = max(0, right_rocket_rect.y)
+    right_rocket_rect.y = min(HEIGHT - right_rocket_rect.height, right_rocket_rect.y)
 
     # Движение мяча
-    ball.x += ball.xvel
-    ball.y += ball.yvel
+    ball_rect.x += ball_speed[0]
+    ball_rect.y += ball_speed[1]
 
-    # Отражение мяча от стенок
-    if ball.top < 0 or ball.bottom > SCREEN_HEIGHT:
-        ball.yvel = -ball.yvel
+    top_wall = 100  # Высота верхней стенки
+    bottom_wall = HEIGHT - 100  # Высота нижней стенки
 
-    # Отражение мяча от ракеток
-    if ball.colliderect(left_racket):
-        ball.xvel = -ball.xvel
+    if ball_rect.top <= top_wall or ball_rect.bottom >= bottom_wall:
+        ball_speed[1] = -ball_speed[1]
 
-    if ball.colliderect(right_racket):
-        ball.xvel = ball.xvel
+    # Отскок мяча от ракеток
+    if ball_rect.colliderect(left_rocket_rect) or ball_rect.colliderect(right_rocket_rect):
+        ball_speed[0] = -ball_speed[0]
 
-def check_winner():
-    """Проверка победителя"""
-    global left_score, right_score
-
-    if ball.right > SCREEN_WIDTH:
-        left_score += 1
-    elif ball.left < 0:
+    # Мяч вышел за границы
+    if ball_rect.left <= 0:
         right_score += 1
+        ball_rect.center = (WIDTH // 2, HEIGHT // 2)
+        ball_speed[0] = 5
+        ball_speed[1] = 5
+        rounds += 1
 
-def play_game():
-    """Игра в пинг-понг"""
-    global ball, left_racket, right_racket, left_score, right_score, round_number
+    if ball_rect.right >= WIDTH:
+        left_score += 1
+        ball_rect.center = (WIDTH // 2, HEIGHT // 2)
+        ball_speed[0] = -5
+        ball_speed[1] = -5
+        rounds += 1
 
-    while True:
-        # Обработка событий
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                sys.exit()
+    # Проверка на завершение игры
+    if rounds >= 10:
+        if left_score > right_score:
+            winner_text = font.render("Зеленый выиграл", True, GREEN)
+        elif left_score < right_score:
+            winner_text = font.render("Синий выиграл", True, BLUE)
+        else:
+            winner_text = font.render("Ничья", True, WHITE)
 
-            # Управление левой ракеткой
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_w:
-                    left_racket.y -= 5
-                elif event.key == pygame.K_s:
-                    left_racket.y += 5
+        screen.blit(winner_text, (WIDTH // 2 - 100, HEIGHT // 2 - 50))
+        pygame.display.flip()
+        time.sleep(2)
+        running = True
 
-            # Управление правой ракеткой
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_UP:
-                    right_racket.y -= 5
-                elif event.key == pygame.K_DOWN:
-                    right_racket.y += 5
+    screen.blit(bard, bard_rect)
+    screen.blit(left_rocket, left_rocket_rect)
+    screen.blit(right_rocket, right_rocket_rect)
+    screen.blit(ball, ball_rect)
 
-        # Обновление объектов
-        update_objects()
+    left_score_text = font.render(str(left_score), True, GREEN)
+    right_score_text = font.render(str(right_score), True, BLUE)
+    screen.blit(left_score_text, (WIDTH // 4, 20))
+    screen.blit(right_score_text, (3 * WIDTH // 4 - 20, 20))
 
-        # Проверка победителя
-        check_winner()
+    pygame.display.flip()
 
-        # Рисование объектов
-        draw_objects()
-
-        # Задержка
-        pygame.time.delay(10)
-
-        # Переход на следующий раунд
-        if round_number == 10:
-            if left_score > right_score:
-                print("Победил левый игрок!")
-            elif right_score > left_score:
-                print("Победил правый игрок!")
-            else:
-                print("Ничья!")
-            return
-
-        round_number += 1
-
-        # Отскок мяча от ворот
-        if ball.right > SCREEN_WIDTH:
-            ball.xvel = -ball.xvel
-        elif ball.left < 0:
-            ball.xvel = ball.xvel
-
-        # Отскок мяча от ракеток
-        if ball.colliderect(left_racket):
-            ball.xvel = -ball.xvel
-
-        if ball.colliderect(right_racket):
-            ball.xvel = ball.xvel
-
-class Menu(QtWidgets.QWidget):
-    def init(self):
-        super().__init__()
-
-        # Настройки окна
-        self.setWindowTitle("Пинг-понг")
-        self.setFixedSize(SCREEN_WIDTH, SCREEN_HEIGHT)
-
-        # Загрузка изображений
-        self.menu_fon_image = pygame.image.load("menu_fon.png")
-
-        # Создание кнопок
-        self.play_button = QtWidgets.QPushButton("Играть")
-        self.exit_button = QtWidgets.QPushButton("Выход")
-
-        # Установка размеров кнопок
-        self.play_button.setFixedSize(200, 50)
-        self.exit_button.setFixedSize(200, 50)
-
-        # Установка положения кнопок
-        self.play_button.move(SCREEN_WIDTH / 2 - 100, SCREEN_HEIGHT / 2 - 25)
-        self.exit_button.move(SCREEN_WIDTH / 2 - 100, SCREEN_HEIGHT / 2 + 25)
-
-        # Связывание событий с кнопками
-        self.play_button.clicked.connect(self.play_game)
-        self.exit_button.clicked.connect(QtWidgets.qApp.quit)
-
-    def paintEvent(self, event):
-        # Отрисовка фона
-        screen.blit(self.menu_fon_image, (0, 0))
-
-        # Отрисовка кнопок
-        self.play_button.setStyleSheet("background-color: #000000; color: #ffffff;")
-        self.exit_button.setStyleSheet("background-color: #000000; color: #ffffff;")
-
-        self.play_button.render(screen)
-        self.exit_button.render(screen)
-
-    def play_game(self):
-        # Переход в игру
-        self.hide()
-        play_game()
-
-def main():
-    # Создание окна меню
-    menu = Menu()
-    menu.show()
-
-    # Запуск основного цикла PyQt5
-    app.exec()
-
-if __name__ == "__main__":
-    main()
+# Завершение игры
+pygame.quit()
+sys.exit()
