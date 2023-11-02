@@ -41,7 +41,7 @@ left_rocket_rect.topleft = (20, (HEIGHT - left_rocket_rect.height) // 2)
 right_rocket_rect.topright = (WIDTH - 20, (HEIGHT - right_rocket_rect.height) // 2)
 
 # Скорость мяча
-ball_speed = [5, 5]
+ball_speed = [7, 7]
 
 # Скорость ракеток
 left_rocket_speed = 5
@@ -127,15 +127,15 @@ while not running:
     if ball_rect.left <= 0:
         right_score += 1
         ball_rect.center = (WIDTH // 2, HEIGHT // 2)
-        ball_speed[0] = 5
-        ball_speed[1] = 5
+        ball_speed[0] = 7
+        ball_speed[1] = 7
         rounds += 1
 
     if ball_rect.right >= WIDTH:
         left_score += 1
         ball_rect.center = (WIDTH // 2, HEIGHT // 2)
-        ball_speed[0] = -5
-        ball_speed[1] = -5
+        ball_speed[0] = -7
+        ball_speed[1] = -7
         rounds += 1
 
     # Проверка на завершение игры
