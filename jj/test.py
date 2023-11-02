@@ -18,12 +18,12 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Пинг-Понг")
 
 # Загрузка изображений
-background = pygame.image.load("fon.png")
-menu_background = pygame.image.load("menu_fon.png")
-ball = pygame.image.load("ball.png")
-bard = pygame.image.load("bard.png")
-left_rocket = pygame.image.load("left_rocket.png")
-right_rocket = pygame.image.load("right_rocket.png")
+background = pygame.image.load("jj\_fon.png")
+menu_background = pygame.image.load("jj\_menu_fon.png")
+ball = pygame.image.load("jj\_ball.png")
+bard = pygame.image.load("jj\_bard.png")
+left_rocket = pygame.image.load("jj\_left_rocket.png")
+right_rocket = pygame.image.load("jj\_right_rocket.png")
 
 # Размеры объектов
 ball_rect = ball.get_rect()
